@@ -55,7 +55,7 @@ class Benchmark
     /**
      * Log and/or store measured data
      */
-    private static function log(): void
+    private static function log()
     {
         $time = self::getTime();
         $memory = self::getTotalMemoryUsage();
