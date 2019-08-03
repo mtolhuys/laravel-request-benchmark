@@ -5,7 +5,7 @@
 [![Quality Score](https://img.shields.io/scrutinizer/g/mtolhuys/laravel-request-benchmark.svg?style=flat-square)](https://scrutinizer-ci.com/g/mtolhuys/laravel-request-benchmark)
 [![Total Downloads](https://img.shields.io/packagist/dt/mtolhuys/laravel-request-benchmark.svg?style=flat-square)](https://packagist.org/packages/mtolhuys/laravel-request-benchmark)
 
-This package comes with a small benchmark middleware which, if included, will measure your requests time and memory usage.
+This package comes with a benchmark middleware which, if included, will measure your requests time and memory usage.
 
 ## Installation
 
