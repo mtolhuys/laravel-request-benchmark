@@ -1,8 +1,7 @@
 <?php
 
-/*
- * You can place your custom package configuration in here.
- */
 return [
-
+    'enabled' => true,
+    'log' => true,
+    'storage_path' => storage_path(),
 ];

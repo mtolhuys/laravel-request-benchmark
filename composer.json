@@ -1,6 +1,6 @@
 {
     "name": "mtolhuys/laravel-request-benchmark",
-    "description": "Small configurable middleware measuring your request's time and memory usage",
+    "description": "Configurable middleware measuring your request's time and memory usage",
     "keywords": [
         "mtolhuys",
         "laravel-request-benchmark"
@@ -16,7 +16,7 @@
         }
     ],
     "require": {
-        "php": "^7.1",
+        "php": "^7.0",
         "illuminate/support": "5.8.*"
     },
     "require-dev": {

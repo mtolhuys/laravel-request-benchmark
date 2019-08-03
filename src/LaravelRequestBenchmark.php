@@ -2,7 +2,31 @@
 
 namespace Mtolhuys\LaravelRequestBenchmark;
 
-class LaravelRequestBenchmark
+use Illuminate\Http\Request;
+use Closure;
+
+class LaravelRequestBenchmark extends Benchmark
 {
-    // Build your next great package.
+    /**
+     * If enabled benchmark request handling.
+     *
+     * @param Request $request
+     * @param Closure $next
+     * @return string
+     */
+    public function handle($request, Closure $next)
+    {
+        if (!config('request-benchmark.enabled')) {
+            return $next($request);
+        }
+
+        self::start("{$request->getMethod()}[{$request->url()}]");
+
+        $response = $next($request);
+
+        self::stop();
+
+        return $response;
+    }
 }
+
