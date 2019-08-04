@@ -34,6 +34,8 @@ Time: 1.05ms
 Pre memory usage 3169Kb
 Post memory usage 3296Kb (127Kb)  
 ```
+As well as a overview page on route `/request-benchmark` containing a table showing the results stored in `request-benchmark.json` file.
+
 This behavior is configurable with the included request-benchmark config file. 
 Run `php artisan vendor:publish --provider="Mtolhuys\LaravelRequestBenchmark\LaravelRequestBenchmarkServiceProvider"` if you don't see it in your config/ folder.
 ```php
