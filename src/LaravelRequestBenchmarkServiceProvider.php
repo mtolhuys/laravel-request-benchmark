@@ -14,10 +14,16 @@ class LaravelRequestBenchmarkServiceProvider extends ServiceProvider
     public function boot(Router $router)
     {
         $router->aliasMiddleware('benchmark', LaravelRequestBenchmark::class);
+        $this->loadRoutesFrom(__DIR__.'/routes.php');
+        $this->loadViewsFrom(__DIR__ . '/views', 'request-benchmark');
 
         $this->publishes([
-            __DIR__.'/../config/config.php' => config_path('request-benchmark.php'),
+            __DIR__ . '/config' => config_path('request-benchmark.php'),
         ]);
+
+        $this->publishes([
+            __DIR__ . '/views' => resource_path('views/vendor/request-benchmark'),
+        ], 'views');
     }
 
     /**
@@ -25,7 +31,7 @@ class LaravelRequestBenchmarkServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->mergeConfigFrom(__DIR__.'/../config/config.php', 'request-benchmark');
+        $this->mergeConfigFrom(__DIR__ . '/config/request-benchmark.php', 'request-benchmark');
     }
 
 }

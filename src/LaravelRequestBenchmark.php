@@ -13,6 +13,7 @@ class LaravelRequestBenchmark extends Benchmark
      * @param Request $request
      * @param Closure $next
      * @return string
+     * @throws \Exception
      */
     public function handle($request, Closure $next)
     {

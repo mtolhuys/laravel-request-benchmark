@@ -7,23 +7,23 @@ class Benchmark
     /**
      * Informative label containing request method and url
      *
-     * @var string $label
+     * @var string $request
      */
-    public static $label;
+    private static $request;
 
     /**
      * Float containing amount of time as microtime
      *
-     * @var float $time
+     * @var float $runtime
      */
-    public static $time;
+    private static $runtime;
 
     /**
      * Array containing measured memory data
      *
      * @var array $memory
      */
-    public static $memory = [
+    private static $memory = [
         'unit' => 'Kb',
         'pre' => null,
         'post' => null,
@@ -32,18 +32,20 @@ class Benchmark
     /**
      * Start measuring, called before request handling
      *
-     * @param string $label
+     * @param string $request
      */
-    public static function start(string $label)
+    public static function start(string $request)
     {
-        self::$label = $label;
-        self::$time = microtime(true);
+        self::$request = $request;
+        self::$runtime = microtime(true);
         self::$memory['pre'] = self::getCurrentMemoryUsage();
     }
 
 
     /**
      * Stop measuring, called after request handling
+     *
+     * @throws \Exception
      */
     public static function stop()
     {
@@ -54,33 +56,39 @@ class Benchmark
 
     /**
      * Log and/or store measured data
+     *
+     * @throws \Exception
      */
     private static function log()
     {
-        $time = self::getTime();
-        $memory = self::getTotalMemoryUsage();
+        $result = self::getResult();
 
         if (config('request-benchmark.log')) {
             \Log::debug(
-                'request-benchmark: ' . self::$label . PHP_EOL
-                . "Time: {$time}ms" . PHP_EOL
-                . "Pre memory usage {$memory->pre}" . PHP_EOL
-                . "Post memory usage {$memory->post} ({$memory->difference})"
+                'request-benchmark: ' . self::$request . PHP_EOL
+                . "Time: {$result->time}ms" . PHP_EOL
+                . "Pre memory usage {$result->pre_memory_usage}" . PHP_EOL
+                . "Post memory usage {$result->post_memory_usage} ({$result->actual_memory_usage})"
             );
         }
 
         if (config('request-benchmark.storage_path')) {
-            $file = config('request-benchmark.storage_path').'/request-benchmark.json';
-            $data = file_exists($file) ? json_decode(file_get_contents($file), true) : [];
-
-            $data[self::$label] = [
-                'time' => "{$time}ms",
-                'pre_memory_usage' => $memory->pre,
-                'post_memory_usage' => "{$memory->post} ({$memory->difference})",
-            ];
-
-            file_put_contents($file, json_encode($data, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT));
+            self::storeJson($result);
         }
+    }
+
+
+    private static function getResult()
+    {
+        $time = self::getTime();
+        $memory = self::getTotalMemoryUsage();
+
+        return (object)[
+            'time' => "{$time}ms",
+            'pre_memory_usage' => $memory->pre,
+            'post_memory_usage' => $memory->post,
+            'actual_memory_usage' => $memory->difference,
+        ];
     }
 
     /**
@@ -129,7 +137,7 @@ class Benchmark
      */
     private static function getTime(): float
     {
-        $diff = microtime(true) - self::$time;
+        $diff = microtime(true) - self::$runtime;
 
         return round(($diff - (int)$diff) * 1000, 2);
     }
@@ -142,7 +150,60 @@ class Benchmark
      */
     private static function increaseMagnitude(int $amount): float
     {
-        return round($amount / 1024);
+        return round($amount / 1024, 2);
+    }
+
+    /**
+     * @param $result
+     *
+     * @throws \Exception
+     */
+    private static function storeJson($result)
+    {
+        $file = config('request-benchmark.storage_path').'/request-benchmark.json';
+        $requests = file_exists($file) ? json_decode(file_get_contents($file), true) : [];
+
+        if (isset($requests[self::$request])) {
+            $requests['history'] = self::history($requests);
+        }
+
+        $requests[self::$request] = $result;
+
+        file_put_contents($file, json_encode($requests, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT));
+    }
+
+    /**
+     * @param array $requests
+     * @return mixed
+     * @throws \Exception
+     */
+    private static function history(array $requests)
+    {
+        $timestamp = (new \DateTime('now'))->format('Y-m-d H:i:s');
+        $history = $requests['history'] ?? [];
+
+        if (!isset($history[self::$request]) || !self::maxHistoryReached($history)) {
+            $history[self::$request][$timestamp] = $requests[self::$request];
+        }
+
+        else {
+            unset($history[self::$request][array_key_last($history[self::$request])]);
+
+            $history[self::$request] = [
+                $timestamp => $requests[self::$request]
+            ] + $history[self::$request];
+        }
+
+        return $history;
+    }
+
+    /**
+     * @param array $history
+     * @return bool
+     */
+    private static function maxHistoryReached(array $history): bool
+    {
+        return config('request-benchmark.max_history') <= count($history[self::$request]);
     }
 }
 
