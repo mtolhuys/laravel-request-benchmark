@@ -1,5 +1,3 @@
 <?php
 
-use Mtolhuys\LaravelRequestBenchmark\Controllers\BenchmarkResultsController;
-
-Route::get('/request-benchmark', [BenchmarkResultsController::class, 'index']);
+Route::get('/request-benchmark', 'Mtolhuys\LaravelRequestBenchmark\Controllers\BenchmarkResultsController@index');
